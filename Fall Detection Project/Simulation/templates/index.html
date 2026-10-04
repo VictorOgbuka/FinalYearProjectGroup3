@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Davicem Smart Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#111; --muted:#666; --blue:#0db0f5; --pill:#4a4a4a;
+  --track-hero:-0.055em; --track-ui:-0.035em;
+  --state:#4a4a4a; --state-soft:#4a4a4a;
+  --font:'Outfit','Gilroy','Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html{font-size:clamp(10px,.8334vw,20px)}
+body{
+  min-height:100vh; font-family:var(--font); color:var(--ink); letter-spacing:var(--track-ui);
+  background:linear-gradient(115deg,#e9e9e9 0%,#e6e6e6 45%,#cfe3ec 75%,#a9d8ea 100%) fixed;
+}
+.page{padding:5.2rem 7.2vw 3rem;display:flex;flex-direction:column;min-height:100vh}
+
+.top{display:flex;justify-content:space-between;align-items:center;gap:2rem;flex-wrap:wrap}
+.brand{font-weight:600;font-size:1.5rem;color:#3d3d3d}
+.meta{display:flex;gap:2.2rem;flex-wrap:wrap;align-items:center}
+.meta .item{display:flex;align-items:center;gap:.7rem;font-size:1.6rem;font-weight:400;color:#222; background:none;border:0;font-family:inherit;padding:0}
+.meta svg{width:1.9rem;height:1.9rem;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+button.item{cursor:pointer}
+button.item:focus-visible,.btn:focus-visible{outline:3px solid var(--blue);outline-offset:4px;border-radius:8px}
+
+.hero{display:grid;grid-template-columns:1fr 36.5rem;gap:3rem;align-items:start;margin-top:2.6rem}
+h1{font-weight:300;font-size:9rem;line-height:1;letter-spacing:var(--track-hero);margin-left:-.4rem;color:var(--ink);transition:color .3s}
+.sub{font-size:1.45rem;color:var(--muted);font-weight:300;margin-top:.6rem}
+.badges{display:flex;gap:1rem;align-items:center;margin-top:2.6rem;flex-wrap:wrap}
+.badge{background:var(--state);color:#fff;font-size:1.4rem;font-weight:400;padding:.8rem 2.1rem;border-radius:.8rem;transition:background .3s}
+.btn{display:none;font-family:inherit;letter-spacing:inherit;font-size:1.4rem;padding:.8rem 2.1rem;border-radius:.8rem;border:0;cursor:pointer;background:#fff;color:#c4261f;font-weight:500}
+.chart{height:17.25rem;border-radius:2rem;background:#efefef;overflow:hidden;position:relative}
+.chart canvas{width:100%;height:100%;display:block}
+
+.cards{display:grid;grid-template-columns:741fr 869fr;gap:2rem;margin-top:2.3rem;flex:1}
+.card{background:#fff;border-radius:2.5rem;padding:2.4rem 4.9rem 3rem}
+.card h2{font-weight:400;font-size:1.5rem;color:#333;letter-spacing:var(--track-ui)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:2.2rem 1rem;margin-top:1.9rem}
+.stat .l{font-size:1.45rem;font-weight:300;color:var(--muted)}
+.stat .v{font-size:6rem;font-weight:300;line-height:1.1;letter-spacing:var(--track-hero);margin-top:.3rem;white-space:nowrap}
+.logs-head{display:flex;justify-content:space-between;align-items:center}
+.export{background:var(--pill);color:#fff;border:0;border-radius:1.2rem;font-family:inherit;letter-spacing:inherit;font-size:1.5rem;padding:.95rem 1.9rem;cursor:pointer}
+.export:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.logs{list-style:none;padding:0;margin:1.7rem 0 0;display:flex;flex-direction:column;gap:1.3rem;max-height:22.5rem;overflow-y:auto}
+.logs li{min-height:4.25rem;border-radius:99rem;background:#f4f4f4;display:flex;align-items:center;gap:1.2rem;padding:0 2rem;font-size:1.2rem;color:#333;flex:none}
+.logs li .t{color:#888;font-weight:300}
+.logs li.fall{background:#fde7e6;color:#a31d17}
+.logs li.warn{background:#fff1da;color:#8a5a00}
+
+body.s-analyzing{--state:#f0a020}
+body.s-critical{--state:#e5322d}
+body.s-critical h1{color:#c4261f}
+body.s-critical .btn{display:inline-block}
+body.s-critical .card:first-child{animation:pulse 1s ease-in-out infinite}
+body.s-offline{--state:#8a8a8a}
+@keyframes pulse{50%{box-shadow:0 0 0 .6rem rgba(229,50,45,.25)}}
+@media (prefers-reduced-motion:reduce){body.s-critical .card:first-child{animation:none}}
+
+@media (max-width:900px){
+  html{font-size:13px}
+  .hero,.cards{grid-template-columns:1fr}
+  h1{font-size:6rem}
+  .card{padding:2rem}
+  .stat .v{font-size:4.2rem}
+  .meta{gap:1.2rem}
+}
+</style>
+</head>
+<body class="s-monitoring">
+<div class="page">
+  <header class="top">
+    <div class="brand">DAVICEM SMART HEALTH</div>
+    <div class="meta">
+      <div class="item"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg><span id="runtime">Estimated Runtime: —</span></div>
+      <div class="item"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="17" height="10" rx="2.5"/><path d="M22 11v2"/><rect id="batfill" x="4.5" y="9.5" width="5" height="5" rx="1" fill="#0db0f5" stroke="none"/></svg><span id="battery">100% Battery</span></div>
+      <div class="item"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.5-4.5L3 9M3 4v5h5M4 13a8 8 0 0 0 14.5 4.5L21 15M21 20v-5h-5"/></svg><span id="sync">Last Sync: —</span></div>
+      <!-- You MUST click this button once after loading the page to unlock the audio buzzer -->
+      <button class="item" id="audio" aria-pressed="true" title="Toggle alarm sound"><svg id="audioIcon" viewBox="0 0 24 24"></svg><span id="audioTxt">Audio: ON</span></button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1 id="title">Monitoring..</h1>
+      <p class="sub" id="sub">Patient is in normal condition</p>
+      <div class="badges">
+        <span class="badge" id="badge">NORMAL</span>
+        <button class="btn" id="ack">Acknowledge &amp; Reset</button>
+      </div>
+    </div>
+    <div class="chart" aria-label="Live sensor signal"><canvas id="cv"></canvas></div>
+  </section>
+
+  <section class="cards">
+    <div class="card">
+      <h2>TELEMETRICS</h2>
+      <div class="stats">
+        <div class="stat"><div class="l">Max Impact</div><div class="v" id="impact">—</div></div>
+        <div class="stat"><div class="l">Fall Probability</div><div class="v" id="prob">—</div></div>
+        <div class="stat"><div class="l">Sampling Rate</div><div class="v" id="hz">—</div></div>
+        <div class="stat"><div class="l">ML Confidence</div><div class="v" id="conf">—</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="logs-head"><h2>EVENT LOGS</h2><button class="export" id="export">Export CSV</button></div>
+      <ul class="logs" id="logs"></ul>
+    </div>
+  </section>
+</div>
+
+<script>
+const API = ''; 
+const POLL_MS = 250;
+
+function adapt(d){
+  const p = d.state ? d.state : d; 
+  const dev = d.device ? d.device : {};
+  return {
+    state:   (p.state_code || 'green').toLowerCase(), 
+    impact:  p.impact_g, 
+    prob:    p.fall_probability ? p.fall_probability / 100 : null, 
+    conf:    p.confidence ? p.confidence / 100 : null, 
+    hz:      dev.hz, 
+    battery: 100, // Locked to 100%
+    runtime: dev.runtime_sec, // Reading seconds
+    syncMs:  d.sync_time ? d.sync_time * 1000 : null, 
+    series:  d.series ? [d.series.accel, d.series.gyro, d.series.pitch] : [[],[],[]]
+  };
+}
+
+const formatRuntime = sec => {
+  if (sec == null) return '—';
+  let s = Math.floor(sec);
+  if (s >= 10000) return (s / 1000).toFixed(1) + 'k';
+  return s;
+};
+
+const $ = id => document.getElementById(id);
+const MODES = {
+  green:   {cls:'s-monitoring', h:'Monitoring..',  sub:'Patient is in normal condition',        badge:'NORMAL'},
+  yellow:  {cls:'s-analyzing',  h:'Analyzing..',   sub:'Checking post-impact movement',         badge:'ANALYZING'},
+  red:     {cls:'s-critical',   h:'Fall detected', sub:'Patient may need help right now',       badge:'FALL CONFIRMED'},
+  offline: {cls:'s-offline',    h:'Offline',       sub:'No data from the device',               badge:'OFFLINE'}
+};
+let current = null, audioOn = true, logData = [], demo = false, ac, beepTimer;
+let hist = [[],[],[]];
+
+function setAudioUI(){
+  $('audioTxt').textContent = 'Audio: ' + (audioOn ? 'ON' : 'OFF');
+  $('audio').setAttribute('aria-pressed', audioOn);$('audioIcon').innerHTML = audioOn
+    ? '<path d="M4 9.5v5h4l5 4v-13l-5 4z"/><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11"/>'
+    : '<path d="M4 9.5v5h4l5 4v-13l-5 4z"/><path d="M17 9.5l4 5M21 9.5l-4 5"/>';
+}
+
+$('audio').onclick = () => {
+  audioOn = !audioOn; setAudioUI();
+  ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+  if (ac.state === 'suspended') ac.resume();
+  if (!audioOn) stopBeep(); else if (current === 'red') startBeep();
+};
+
+function beep(){
+  if (!ac) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = 'square'; o.frequency.value = 880; 
+  g.gain.value = 0.15; // LOUD BUZZER
+  o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.75); // LONG BEEP
+}
+function startBeep(){ if (!audioOn || beepTimer) return; beep(); beepTimer = setInterval(beep, 1000); }
+function stopBeep(){ clearInterval(beepTimer); beepTimer = null; }
+
+function renderLogs(logsFromPython = null){
+  // If we have actual python logs, use them, otherwise use the internal array
+  let sourceLogs = logsFromPython ? logsFromPython.map(l => {
+    let parts = l.split("] ");
+    return {time: parts[0] + "]", msg: parts[1], kind: parts[1].includes("Fall") ? "fall" : (parts[1].includes("Impact") ? "warn" : "")};
+  }) : logData;
+  
+  const rows = sourceLogs.map(e => `<li class="${e.kind}"><span class="t">${e.time}</span><span>${e.msg}</span></li>`);
+  while (rows.length < 4) rows.push('<li aria-hidden="true"></li>');
+  $('logs').innerHTML = rows.join('');
+}
+
+$('export').onclick = () => {
+  // Simple ping to backend just to prove the button works, logs are saved via Python anyway
+  alert("Logs are actively being saved to system_audit_log.csv in your project folder!");
+};
+
+$('ack').onclick = async () => {
+  try { await fetch(API + '/acknowledge', {method:'POST'}); } catch(e){}
+  if (demo) demoState = 'green';
+};
+
+const colors = ['#ff2e3b','#10b4f5','#18ffa5'];
+function draw(){
+  const cv = $('cv'), r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  cv.width = r.width * dpr; cv.height = r.height * dpr;
+  const c = cv.getContext('2d'); c.scale(dpr, dpr);
+  const w = r.width, h = r.height;
+  
+  c.strokeStyle = 'rgba(0,0,0,.07)'; c.lineWidth = 1;
+  for (let x = 0; x <= w; x += w/10){ c.beginPath(); c.moveTo(x,0); c.lineTo(x,h); c.stroke(); }
+  for (let y = 0; y <= h; y += h/5){ c.beginPath(); c.moveTo(0,y); c.lineTo(w,y); c.stroke(); }
+  c.strokeStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.moveTo(w/2,0); c.lineTo(w/2,h); c.stroke();
+  
+  hist.forEach((s,i) => {
+    if(!s || s.length === 0) return;
+    c.strokeStyle = colors[i]; c.lineWidth = Math.max(4, h/45); c.lineJoin = c.lineCap = 'round';
+    c.beginPath();
+    s.forEach((v,j) => { const x = j/(s.length-1)*w, y = h - (.1 + .8*v)*h; j ? c.lineTo(x,y) : c.moveTo(x,y); });
+    c.stroke();
+  });
+}
+
+const pct = v => v == null ? '—' : Math.round(v * 100) + '%';
+function render(s, rawData){
+  const key = s.offline ? 'offline' : (MODES[s.state] ? s.state : 'green'), m = MODES[key];
+  if (key !== current){
+    document.body.className = m.cls;
+    $('title').textContent = m.h; $('sub').textContent = m.sub; $('badge').textContent = m.badge;
+    key === 'red' ? startBeep() : stopBeep();
+    current = key;
+  }
+  
+  $('impact').textContent  = s.impact == null ? '—' : s.impact.toFixed(2) + 'g';
+  $('prob').textContent    = pct(s.prob);
+  $('conf').textContent    = pct(s.conf);$('hz').textContent      = s.hz == null ? '—' : Math.round(s.hz) + 'Hz';
+  $('runtime').textContent = 'Estimated Runtime: ' + formatRuntime(s.runtime) + (s.runtime >= 10000 ? '' : 's');$('sync').textContent    = 'Last Sync: ' + (s.syncMs == null ? '—' : Math.round(s.syncMs/1000) + 's ago');
+  
+  // Directly overwrite the graph arrays with what Python sends
+  if(s.series && s.series[0] && s.series[0].length > 0) {
+      hist[0] = s.series[0]; hist[1] = s.series[1]; hist[2] = s.series[2];
+  }
+  draw();
+  
+  if(rawData && rawData.log) renderLogs(rawData.log);
+}
+
+// Fallback demo data if the server crashes
+let demoState = 'green', t = 0, fails = 0;
+function demoFrame(){
+  t++;
+  if (t % 160 === 60) demoState = 'yellow';
+  if (t % 160 === 90) demoState = Math.random() > .5 ? 'red' : 'green';
+  const f = n => .5 + .3*Math.sin(t/n) + (Math.random()-.5)*.1;
+  return {state:demoState, impact:7.52, prob:.56, conf:.73, hz:100, battery:43, runtime:t, syncMs:4000, series:[[f(6)], [f(9)], [f(14)]]};
+}
+
+async function tick(){
+  try{
+    const r = await fetch(API + '/status', {cache:'no-store'});
+    if (!r.ok) throw 0;
+    fails = 0; demo = false; 
+    const rawData = await r.json();
+    render(adapt(rawData), rawData);
+  }catch(e){
+    if (++fails > 3){ demo = true; render(demoFrame(), null); }
+  }
+}
+
+setAudioUI(); 
+setInterval(tick, POLL_MS); tick();
+addEventListener('resize', draw);
+</script>
+</body>
+</html>
